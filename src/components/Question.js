@@ -1,32 +1,30 @@
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 
-function Question({ question, onAnswered }) {
+export default function Question({ question, answers, onAnswered }) {
   const [timeRemaining, setTimeRemaining] = useState(10);
 
-  // add useEffect code
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      // Use functional state update to ensure latest value
+      setTimeRemaining(prev => {
+        if (prev === 1) {
+          onAnswered(false); // trigger parent callback
+          return 10; // reset timer
+        }
+        return prev - 1;
+      });
+    }, 1000);
 
-  function handleAnswer(isCorrect) {
-    setTimeRemaining(10);
-    onAnswered(isCorrect);
-  }
-
-  const { id, prompt, answers, correctIndex } = question;
+    return () => clearInterval(intervalId);
+  }, [onAnswered]);
 
   return (
-    <>
-      <h1>Question {id}</h1>
-      <h3>{prompt}</h3>
-      {answers.map((answer, index) => {
-        const isCorrect = index === correctIndex;
-        return (
-          <button key={answer} onClick={() => handleAnswer(isCorrect)}>
-            {answer}
-          </button>
-        );
-      })}
-      <h5>{timeRemaining} seconds remaining</h5>
-    </>
+    <div>
+      <h2>{question}</h2>
+      <p>{timeRemaining} seconds remaining</p>
+      <ul>
+        {answers.map((a, i) => <li key={i}>{a}</li>)}
+      </ul>
+    </div>
   );
 }
-
-export default Question;
